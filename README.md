@@ -48,6 +48,34 @@ Do not use this project for illegal purposes or in a production environment with
 
 After installation, the following pages will be available:
 
+## Installation
+
+To install MINI APP SHOP VPN on your server, first clone the repository:
+
+```bash
+cd /root
+sudo apt update
+sudo apt install -y git
+git clone https://github.com/USERNAME/MiniAPP.git
+cd MiniAPP
+sudo bash install.sh
+
+```
+After installation, your website will be available at:
+```bash
+https://YOUR_DOMAIN
+```
+Update Installation
+
+If you already installed the project and want to update it from GitHub, run:
+```bash
+cd /root
+rm -rf MiniAPP
+git clone https://github.com/USERNAME/MiniAPP.git
+cd MiniAPP
+sudo bash install.sh
+```
+
 ```text
 Home:
 https://YOUR_DOMAIN/
