@@ -3,16 +3,15 @@ set -Eeuo pipefail
 
 # ==========================================================
 # MINI APP SHOP VPN Auto Installer
-# Ubuntu 22.04 / Hetzner VPS
+# Ubuntu 22.04 / VPS
 #
 # Run:
 #   sudo bash install.sh
 #
-# Or non-interactive:
-#   sudo bash install.sh --domain example.com --bot iropen_bot --support IROPN_Supports --secret YOUR_SECRET --email you@example.com
+# Non-interactive:
+#   sudo bash install.sh --domain example-vpn.com --bot my_vpn_bot --support vpn_support --secret STRONG_SECRET --email admin@example.com
 # ==========================================================
 
-# Force UTF-8 output for Persian text in SSH terminals
 export LANG="${LANG:-C.UTF-8}"
 export LC_ALL="${LC_ALL:-C.UTF-8}"
 export LANGUAGE="${LANGUAGE:-en_US:en}"
@@ -30,6 +29,7 @@ API_SECRET=""
 LE_EMAIL=""
 ENABLE_SSL="yes"
 
+BRAND_NAME="IROPEN"
 SITE_DIR="/var/www/iropen"
 API_DIR="/opt/iropen-api"
 API_PORT="3000"
@@ -52,16 +52,16 @@ usage() {
 MINI APP SHOP VPN Auto Installer
 
 Options:
-  --domain DOMAIN           Domain, example: iropen.rova.cam
-  --bot USERNAME            Telegram bot username without @, example: iropen_bot
-  --support USERNAME        Support username/channel without @, example: IROPN_Supports
+  --domain DOMAIN           Website domain, example: example-vpn.com
+  --bot USERNAME            Telegram bot username without @, example: my_vpn_bot
+  --support USERNAME        Support username or channel without @, example: vpn_support
   --secret SECRET           API secret for bot-to-site purchase sync
-  --email EMAIL             Email for Let's Encrypt SSL
+  --email EMAIL             Email for Let's Encrypt SSL, example: admin@example.com
   --no-ssl                  Skip SSL
   -h, --help                Show help
 
 Example:
-  sudo bash install.sh --domain iropen.rova.cam --bot iropen_bot --support IROPN_Supports --secret IROPEN_SECRET_2026 --email you@example.com
+  sudo bash install.sh --domain example-vpn.com --bot my_vpn_bot --support vpn_support --secret STRONG_SECRET_123 --email admin@example.com
 EOF
 }
 
@@ -105,7 +105,7 @@ done
 
 require_root() {
   if [[ "${EUID}" -ne 0 ]]; then
-    err "Run as root:"
+    err "Please run this script as root:"
     err "sudo bash install.sh"
     exit 1
   fi
@@ -117,43 +117,45 @@ ask_questions() {
   echo
 
   if [[ -z "$DOMAIN" ]]; then
-    echo "دامنه سایت را وارد کنید"
-    echo "مثال:"
-    echo "iropen.rova.cam"
+    echo "Please enter your website domain."
+    echo "Example:"
+    echo "example-vpn.com"
     read -rp "Domain: " DOMAIN
   fi
 
   if [[ -z "$BOT_USERNAME" ]]; then
-    echo "آیدی ربات تلگرام را بدون @ وارد کنید"
-    echo "مثال:"
-    echo "iropen_bot"
+    echo "Please enter your Telegram bot username without @."
+    echo "Example:"
+    echo "my_vpn_bot"
     read -rp "Bot username: " BOT_USERNAME
   fi
 
   if [[ -z "$SUPPORT_USERNAME" ]]; then
-    echo "آیدی پشتیبانی یا کانال پشتیبانی را بدون @ وارد کنید"
-    echo "مثال:"
-    echo "IROPN_Supports"
+    echo "Please enter your Telegram support username or support channel without @."
+    echo "Example:"
+    echo "vpn_support"
     read -rp "Support username: " SUPPORT_USERNAME
   fi
 
   if [[ -z "$API_SECRET" ]]; then
-    echo "رمز API برای اتصال ربات به سایت را وارد کنید"
-    echo "مثال:"
-    echo "IROPEN_SECRET_2026"
+    echo "Please enter an API secret for connecting your bot to the website."
+    echo "Example:"
+    echo "STRONG_SECRET_123"
     read -rsp "API secret: " API_SECRET
     echo
   fi
 
   if [[ "$ENABLE_SSL" == "yes" && -z "$LE_EMAIL" ]]; then
-    echo "ایمیل برای دریافت SSL رایگان را وارد کنید"
-    echo "اگر ایمیل ندارید، Enter بزنید"
+    echo "Please enter your email address for the free SSL certificate."
+    echo "Example:"
+    echo "admin@example.com"
+    echo "If you do not want to enter an email, just press Enter."
     read -rp "SSL email: " LE_EMAIL
   fi
 
   if [[ -z "$DOMAIN" || -z "$BOT_USERNAME" || -z "$SUPPORT_USERNAME" || -z "$API_SECRET" ]]; then
     err "Required values are missing."
-    err "دامنه، آیدی ربات، آیدی پشتیبانی و رمز API اجباری هستند."
+    err "Domain, bot username, support username, and API secret are required."
     exit 1
   fi
 
@@ -185,8 +187,8 @@ create_site() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#030712">
-  <title>IROPEN VPN | خرید سریع و امن</title>
-  <link rel="stylesheet" href="/assets/style.css?v=20">
+  <title>${BRAND_NAME} VPN | خرید سریع و امن</title>
+  <link rel="stylesheet" href="/assets/style.css?v=30">
 </head>
 <body>
   <header class="topbar">
@@ -205,8 +207,8 @@ create_site() {
     <section class="hero">
       <div class="hero-text">
         <div class="pill">⚡ اتصال بدون محدودیت</div>
-        <h1>خرید سریع و امن<br><span>VPN با IROPEN</span></h1>
-        <p>با IROPEN تجربه‌ای متفاوت از اینترنت آزاد و امن داشته باشید. خرید اشتراک فقط با چند کلیک از طریق ربات تلگرام انجام می‌شود.</p>
+        <h1>خرید سریع و امن<br><span>VPN با ${BRAND_NAME}</span></h1>
+        <p>با ${BRAND_NAME} تجربه‌ای متفاوت از اینترنت آزاد و امن داشته باشید. خرید اشتراک فقط با چند کلیک از طریق ربات تلگرام انجام می‌شود.</p>
         <div class="actions">
           <a class="glass-btn" href="https://t.me/${BOT_USERNAME}" target="_blank" rel="noopener">ورود به ربات</a>
           <a class="blue-btn" href="/plans.html">خرید اشتراک</a>
@@ -214,11 +216,11 @@ create_site() {
       </div>
 
       <div class="shield-card">
-        <div class="shield">🔒<span>IROPEN</span></div>
+        <div class="shield">🔒<span>${BRAND_NAME}</span></div>
       </div>
 
       <aside class="feature-panel">
-        <h3>چرا <span>IROPEN</span>؟</h3>
+        <h3>چرا <span>${BRAND_NAME}</span>؟</h3>
         <div>🚀 <b>سرعت بالا</b><small>سرورهای قدرتمند و پرسرعت</small></div>
         <div>📶 <b>اتصال پایدار</b><small>اتصال مطمئن و بدون قطعی</small></div>
         <div>⚡ <b>تحویل خودکار</b><small>فعال‌سازی آنی پس از پرداخت</small></div>
@@ -272,7 +274,7 @@ create_site() {
   </main>
 
   <footer>
-    <span>IROPEN VPN</span>
+    <span>${BRAND_NAME} VPN</span>
     <a href="https://t.me/${SUPPORT_USERNAME}" target="_blank" rel="noopener">پشتیبانی</a>
   </footer>
 </body>
@@ -285,8 +287,8 @@ EOF
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>پلن‌های IROPEN</title>
-  <link rel="stylesheet" href="/assets/style.css?v=20">
+  <title>پلن‌های ${BRAND_NAME}</title>
+  <link rel="stylesheet" href="/assets/style.css?v=30">
 </head>
 <body>
 <header class="topbar">
@@ -303,7 +305,7 @@ EOF
 
 <section class="page-head">
   <p class="eyebrow">پلن‌ها</p>
-  <h1>پلن‌های یک ماهه IROPEN</h1>
+  <h1>پلن‌های یک ماهه ${BRAND_NAME}</h1>
   <p>هر پلن را انتخاب کن و خرید را از طریق ربات انجام بده.</p>
 </section>
 
@@ -349,7 +351,7 @@ EOF
 </section>
 
 <footer>
-  <span>IROPEN VPN</span>
+  <span>${BRAND_NAME} VPN</span>
   <a href="https://t.me/${SUPPORT_USERNAME}" target="_blank">پشتیبانی</a>
 </footer>
 </body>
@@ -362,8 +364,8 @@ EOF
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>ویژگی‌های IROPEN</title>
-  <link rel="stylesheet" href="/assets/style.css?v=20">
+  <title>ویژگی‌های ${BRAND_NAME}</title>
+  <link rel="stylesheet" href="/assets/style.css?v=30">
 </head>
 <body>
 <header class="topbar">
@@ -380,7 +382,7 @@ EOF
 
 <section class="page-head">
   <p class="eyebrow">ویژگی‌ها</p>
-  <h1>چرا IROPEN؟</h1>
+  <h1>چرا ${BRAND_NAME}؟</h1>
   <p>تمرکز روی سرعت، پایداری، تحویل سریع و پشتیبانی.</p>
 </section>
 
@@ -394,7 +396,7 @@ EOF
 </section>
 
 <footer>
-  <span>IROPEN VPN</span>
+  <span>${BRAND_NAME} VPN</span>
   <a href="https://t.me/${SUPPORT_USERNAME}" target="_blank">پشتیبانی</a>
 </footer>
 </body>
@@ -407,8 +409,8 @@ EOF
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>مشخصات من | IROPEN</title>
-  <link rel="stylesheet" href="/assets/style.css?v=20">
+  <title>مشخصات من | ${BRAND_NAME}</title>
+  <link rel="stylesheet" href="/assets/style.css?v=30">
 </head>
 <body>
 <header class="topbar">
@@ -437,12 +439,12 @@ EOF
 </section>
 
 <footer>
-  <span>IROPEN VPN</span>
+  <span>${BRAND_NAME} VPN</span>
   <a href="https://t.me/${SUPPORT_USERNAME}" target="_blank">پشتیبانی</a>
 </footer>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="/assets/script.js?v=20"></script>
+<script src="/assets/script.js?v=30"></script>
 </body>
 </html>
 EOF
@@ -664,7 +666,7 @@ app.post("/api/bot/purchase", (req, res) => {
     telegram_id: String(b.telegram_id),
     username: b.username || "",
     full_name: b.full_name || "",
-    plan_name: b.plan_name || "اشتراک IROPEN",
+    plan_name: b.plan_name || "IROPEN Subscription",
     volume_gb: Number(b.volume_gb || 0),
     price_toman: Number(b.price_toman || 0),
     started_at: b.started_at || "",
@@ -790,9 +792,9 @@ setup_ssl() {
   log "Trying to issue SSL certificate for ${DOMAIN}..."
 
   if [[ -n "$LE_EMAIL" ]]; then
-    certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$LE_EMAIL" --redirect || warn "SSL failed. Check DNS A records."
+    certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$LE_EMAIL" --redirect || warn "SSL failed. Check your DNS records."
   else
-    certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email --redirect || warn "SSL failed. Check DNS A records."
+    certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email --redirect || warn "SSL failed. Check your DNS records."
   fi
 
   systemctl reload nginx || true
@@ -810,21 +812,23 @@ final_test() {
   echo -e "${GREEN}==========================================================${NC}"
   echo -e "${GREEN}MINI APP SHOP VPN installed successfully.${NC}"
   echo
-  echo "Site:"
+  echo "Website:"
   echo "https://${DOMAIN}"
   echo
-  echo "Bot link:"
+  echo "Telegram bot:"
   echo "https://t.me/${BOT_USERNAME}"
   echo
   echo "Support:"
   echo "https://t.me/${SUPPORT_USERNAME}"
   echo
-  echo "API test:"
+  echo "API health check:"
   echo "curl https://${DOMAIN}/api/health"
   echo
-  echo "Bot purchase API:"
+  echo "Purchase API endpoint:"
   echo "POST https://${DOMAIN}/api/bot/purchase"
-  echo "Header: x-api-secret: ${API_SECRET}"
+  echo
+  echo "Purchase API header:"
+  echo "x-api-secret: ${API_SECRET}"
   echo
   echo "BotFather Mini App URL:"
   echo "https://${DOMAIN}"
