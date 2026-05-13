@@ -56,7 +56,7 @@ To install MINI APP SHOP VPN on your server, first clone the repository:
 cd /root
 sudo apt update
 sudo apt install -y git
-git clone https://github.com/USERNAME/MiniAPP.git
+git clone https://github.com/ibooplay/MiniAPP.git
 cd MiniAPP
 sudo bash install.sh
 
@@ -71,7 +71,7 @@ If you already installed the project and want to update it from GitHub, run:
 ```bash
 cd /root
 rm -rf MiniAPP
-git clone https://github.com/USERNAME/MiniAPP.git
+git clone https://github.com/ibooplay/MiniAPP.git
 cd MiniAPP
 sudo bash install.sh
 ```
